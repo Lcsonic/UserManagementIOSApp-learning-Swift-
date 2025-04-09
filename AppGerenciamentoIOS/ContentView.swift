@@ -12,11 +12,11 @@ struct ContentView: View {
     // Página atualmente selecionada
     @State private var selectedPage: Page = .home
     
-    // Controla se a sidebar flutuante está visível ou não
+    // Controle da visibilidade da sidebar
     @State private var isSidebarVisible: Bool = false
     
     var body: some View {
-        ZStack(alignment: .leading) { // Alinha o conteúdo principal e a sidebar à esquerda
+        ZStack(alignment: .leading) {
             
             // MARK: - Conteúdo Principal
             VStack {
@@ -24,21 +24,24 @@ struct ContentView: View {
                     // Botão para abrir a sidebar
                     Button(action: {
                         withAnimation {
-                            isSidebarVisible = true // Exibe a sidebar com animação
+                            isSidebarVisible.toggle()
                         }
                     }) {
-                        Image(systemName: "line.3.horizontal") // Ícone de "menu"
+                        Image(systemName: "sidebar.left")
                             .resizable()
-                            .frame(width: 24, height: 18)
-                            .padding(16) // Espaçamento interno do botão
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(.primary)
                     }
+                    // Alinhamento horizontal e vertical consistente com o botão de fechar
+                    .padding(.leading, 26)
+                    .padding(.top, 20)
 
-                    Spacer() // Empurra o botão para a esquerda
+                    Spacer()
                 }
 
-                Spacer() // Espaço entre topo e conteúdo da página
-
-                // Conteúdo principal com base na página selecionada
+                Spacer()
+                
+                // Exibe o conteúdo com base na página selecionada
                 switch selectedPage {
                 case .home:
                     Text("Home Page")
@@ -54,28 +57,27 @@ struct ContentView: View {
                         .fontWeight(.bold)
                 }
 
-                Spacer() // Espaço entre o conteúdo e a parte inferior
+                Spacer()
             }
-            .zIndex(0) // Mantém o conteúdo principal abaixo da sidebar
+            .zIndex(0) // Conteúdo principal fica atrás da sidebar
 
-            // MARK: - Sidebar flutuante
+            // MARK: - Sidebar
             if isSidebarVisible {
                 
-                // Fundo escurecido semi-transparente que cobre a tela inteira
-                // Fecha a sidebar quando clicado
+                // Camada de fundo escurecida que fecha a sidebar ao ser tocada
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
                     .onTapGesture {
                         withAnimation {
-                            isSidebarVisible = false // Oculta a sidebar com animação
+                            isSidebarVisible = false
                         }
                     }
                     .zIndex(1) // Fica acima do conteúdo principal, mas abaixo da sidebar
-                
-                // Sidebar propriamente dita
+
+                // Conteúdo da sidebar
                 VStack(alignment: .leading) {
                     
-                    // Botão de fechar (ícone X)
+                    // Botão de fechar no mesmo alinhamento do botão de abrir
                     Button(action: {
                         withAnimation {
                             isSidebarVisible = false
@@ -84,10 +86,13 @@ struct ContentView: View {
                         Image(systemName: "xmark")
                             .resizable()
                             .frame(width: 18, height: 18)
+                            .foregroundColor(.primary)
                             .padding()
                     }
+                    .padding(.leading, 14) // Alinhamento em pixel "fixo" testar em outros modelos de iphone para ver se existe mudandaça nas posições
+                    .padding(.top, 6)
 
-                    Divider().padding(.vertical, 10) // Separador visual
+                    Divider().padding(.vertical, 10)
 
                     // Botões de navegação entre páginas
                     Group {
@@ -115,17 +120,17 @@ struct ContentView: View {
                                 .padding(.vertical)
                         }
                     }
-                    .padding(.leading, UIScreen.main.bounds.width * 0.10) // Recuo interno de 10% da largura da tela
-                    
-                    Spacer() // Empurra os botões para o topo
+                    // Recuo interno da sidebar, proporcional à largura da tela
+                    .padding(.leading, UIScreen.main.bounds.width * 0.10)
+
+                    Spacer()
                 }
-                .frame(width: UIScreen.main.bounds.width * 0.70) // Sidebar ocupa 70% da largura da tela
+                .frame(width: UIScreen.main.bounds.width * 0.70) // Sidebar com 70% da largura da tela
                 .background(Color(.systemGray6)) // Cor de fundo clara e neutra
                 .transition(.move(edge: .leading)) // Animação de entrada pela esquerda
-                .zIndex(2) // Fica no topo da pilha de visualização
+                .zIndex(2) // Fica acima de todo o restante
             }
         }
-
     }
 }
 
