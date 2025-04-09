@@ -14,7 +14,7 @@ struct ContentView: View {
     // Controle da visibilidade da sidebar
     @State private var isSidebarVisible: Bool = false
 
-    // Largura da sidebar, proporcional à tela (70%)
+    // Largura da sidebar baseada em 70% da largura da tela
     private var sidebarWidth: CGFloat {
         UIScreen.main.bounds.width * 0.70
     }
@@ -38,12 +38,12 @@ struct ContentView: View {
                             .foregroundColor(.primary)
                             .padding()
                     }
-                    .padding(.leading, 14)
-                    .padding(.top, 6)
+                    .padding(.leading, 14) // Alinhamento horizontal
+                    .padding(.top, 6)      // Alinhamento vertical
 
                     Divider().padding(.vertical, 10)
 
-                    // Navegação pelas páginas
+                    // Botões de navegação entre as páginas
                     Group {
                         Button(action: {
                             selectedPage = .home
@@ -69,21 +69,21 @@ struct ContentView: View {
                                 .padding(.vertical)
                         }
                     }
-                    // Recuo horizontal dos botões de navegação
+                    // Recuo interno dos botões
                     .padding(.leading, UIScreen.main.bounds.width * 0.10)
 
                     Spacer()
                 }
-                .frame(width: sidebarWidth) // Aplica a largura proporcional definida
-                .background(Color(.systemBackground)) // Cor de fundo adaptável (modo claro/escuro)
-                .transition(.move(edge: .leading)) // Transição animada vinda da esquerda
-                .zIndex(2) // Camada superior
+                .frame(width: sidebarWidth) // Define a largura da sidebar
+                .background(Color(.systemBackground)) // Usa o fundo do sistema (compatível com dark/light mode)
+                .transition(.move(edge: .leading)) // Animação ao aparecer pela esquerda
+                .zIndex(2) // Fica sobre o conteúdo principal
             }
 
-            // MARK: - Tela principal com offset e overlay escurecido
+            // MARK: - Conteúdo principal da tela
             VStack {
                 HStack {
-                    // Botão para abrir/fechar a sidebar
+                    // Botão para abrir ou fechar a sidebar
                     Button(action: {
                         withAnimation(.easeInOut) {
                             isSidebarVisible.toggle()
@@ -94,7 +94,6 @@ struct ContentView: View {
                             .frame(width: 24, height: 24)
                             .foregroundColor(.primary)
                     }
-                    // Mesmo posicionamento do botão de fechar da sidebar
                     .padding(.leading, 26)
                     .padding(.top, 20)
 
@@ -103,7 +102,7 @@ struct ContentView: View {
 
                 Spacer()
 
-                // Exibe o conteúdo da página atual
+                // Exibe o conteúdo de acordo com a página selecionada
                 switch selectedPage {
                 case .home:
                     Text("Home Page")
@@ -122,24 +121,43 @@ struct ContentView: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(.systemBackground))
-            .offset(x: isSidebarVisible ? sidebarWidth : 0) // Desloca a tela para a direita ao abrir a sidebar
-            .disabled(isSidebarVisible) // Evita interações com o conteúdo enquanto a sidebar estiver visível
+            .background(Color(.systemBackground)) // Cor de fundo da tela principal
+            .offset(x: isSidebarVisible ? sidebarWidth : 0) // Move o conteúdo quando a sidebar está visível
+            .blur(radius: isSidebarVisible ? 1 : 0) // Aplica um leve desfoque ao fundo
             .overlay(
-                // Overlay escurecido por cima da tela ao abrir a sidebar
-                isSidebarVisible ?
-                    Color.black.opacity(0.3)
-                        .ignoresSafeArea() // Cobre toda a área da tela
-                        .onTapGesture {
-                            withAnimation(.easeInOut) {
-                                isSidebarVisible = false
+                // Overlay escurecido com leve opacidade (quando a sidebar está visível)
+                Group {
+                    if isSidebarVisible {
+                        Color.black.opacity(0.12)
+                            .ignoresSafeArea() // Cobre toda a tela
+                            .onTapGesture {
+                                withAnimation(.easeInOut) {
+                                    isSidebarVisible = false
+                                }
                             }
-                        }
-                    : nil
+                    }
+                }
             )
-            .zIndex(1) // Fica abaixo da sidebar, acima do fundo
+            .disabled(isSidebarVisible) // Impede interação com o conteúdo ao abrir a sidebar
+            .zIndex(1) // Fica abaixo da sidebar
+
+            // Método antigo com overlay mais opaco e sem blur
+//            .offset(x: isSidebarVisible ? sidebarWidth : 0)
+//            .disabled(isSidebarVisible)
+//            .overlay(
+//                isSidebarVisible ?
+//                    Color.black.opacity(0.35)
+//                        .ignoresSafeArea()
+//                        .onTapGesture {
+//                            withAnimation(.easeInOut) {
+//                                isSidebarVisible = false
+//                            }
+//                        }
+//                    : nil
+//            )
+            
         }
-        // Animação slide da sidebar aplicada a qualquer mudança no estado da visibilidade da sidebar
+        // Aplica a animação suave sempre que `isSidebarVisible` mudar
         .animation(.easeInOut, value: isSidebarVisible)
     }
 }
