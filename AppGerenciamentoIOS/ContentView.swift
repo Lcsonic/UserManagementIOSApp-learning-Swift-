@@ -1,111 +1,131 @@
 import SwiftUI
 
-// Enum com as páginas disponíveis
+// Enum representando as páginas disponíveis na aplicação
 enum Page {
-    case home       // Página inicial
-    case settings   // Página de configurações
-    case about      // Página sobre
+    case home
+    case settings
+    case about
 }
 
 struct ContentView: View {
     
-    // Página atualmente selecionada pelo usuário
+    // Página atualmente selecionada
     @State private var selectedPage: Page = .home
     
-    // Controle se a sidebar está expandida ou recolhida
-    @State private var isSidebarExpanded: Bool = true
+    // Controla se a sidebar flutuante está visível ou não
+    @State private var isSidebarVisible: Bool = false
     
     var body: some View {
-        HStack(spacing: 0) {
+        ZStack(alignment: .leading) { // Alinha o conteúdo principal e a sidebar à esquerda
             
-            // MARK: - Sidebar (menu lateral)
-            VStack(alignment: .leading) {
-                
-                // Botão que expande ou recolhe a sidebar
-                Button(action: {
-                    withAnimation {
-                        isSidebarExpanded.toggle() // Inverte o estado da sidebar com animação
+            // MARK: - Conteúdo Principal
+            VStack {
+                HStack {
+                    // Botão para abrir a sidebar
+                    Button(action: {
+                        withAnimation {
+                            isSidebarVisible = true // Exibe a sidebar com animação
+                        }
+                    }) {
+                        Image(systemName: "line.3.horizontal") // Ícone de "menu"
+                            .resizable()
+                            .frame(width: 24, height: 18)
+                            .padding(16) // Espaçamento interno do botão
                     }
-                }) {
-                    Image(systemName: "sidebar.leading") // Ícone padrão do sistema
-                        .resizable()
-                        .frame(width: 24, height: 24)
-                        .padding(.top)
+
+                    Spacer() // Empurra o botão para a esquerda
                 }
-                .padding(.horizontal)
-                
-                Divider().padding(.vertical, 10) // Linha divisória para separação visual
-                
-                // Botões de navegação entre páginas
-                Group {
-                    Button(action: {
-                        selectedPage = .home // Navega para a página inicial
-                    }) {
-                        Label("Home", systemImage: "house")
-                            .labelStyle(SidebarLabelStyle(isExpanded: isSidebarExpanded))
-                    }
-                    
-                    Button(action: {
-                        selectedPage = .settings // Navega para configurações
-                    }) {
-                        Label("Settings", systemImage: "gear")
-                            .labelStyle(SidebarLabelStyle(isExpanded: isSidebarExpanded))
-                    }
-                    
-                    Button(action: {
-                        selectedPage = .about // Navega para a página "Sobre"
-                    }) {
-                        Label("About", systemImage: "info.circle")
-                            .labelStyle(SidebarLabelStyle(isExpanded: isSidebarExpanded))
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                
-                Spacer() // Empurra o conteúdo para o topo da sidebar
-            }
-            // Define a largura da sidebar conforme estado
-            .frame(width: isSidebarExpanded ? 200 : 60) // <- AQUI é definido o tamanho recolhido (60)
-            .background(Color.gray.opacity(0.15)) // Cor de fundo leve
-            .animation(.easeInOut, value: isSidebarExpanded) // Anima a transição de expansão/recolhimento
-            
-            Divider() // Linha vertical entre sidebar e conteúdo principal
-            
-            // MARK: - Área de conteúdo principal
-            ZStack {
+
+                Spacer() // Espaço entre topo e conteúdo da página
+
+                // Conteúdo principal com base na página selecionada
                 switch selectedPage {
                 case .home:
-                    Text("Home Page") // Conteúdo da página Home
+                    Text("Home Page")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                 case .settings:
-                    Text("Settings Page") // Conteúdo da página Settings
+                    Text("Settings Page")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                 case .about:
-                    Text("About Page") // Conteúdo da página About
+                    Text("About Page")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                 }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity) // Ocupa todo o espaço disponível
-            .background(Color.white) // Fundo branco para o conteúdo principal
-        }
-    }
-}
 
-// MARK: - Estilo personalizado para mostrar ou ocultar texto do Label
-struct SidebarLabelStyle: LabelStyle {
-    var isExpanded: Bool
-    
-    func makeBody(configuration: Configuration) -> some View {
-        HStack {
-            configuration.icon // Ícone do label (por exemplo, casa, engrenagem, etc.)
-            if isExpanded {
-                configuration.title // Só mostra o texto se a sidebar estiver expandida
-                    .font(.body)
+                Spacer() // Espaço entre o conteúdo e a parte inferior
+            }
+            .zIndex(0) // Mantém o conteúdo principal abaixo da sidebar
+
+            // MARK: - Sidebar flutuante
+            if isSidebarVisible {
+                
+                // Fundo escurecido semi-transparente que cobre a tela inteira
+                // Fecha a sidebar quando clicado
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation {
+                            isSidebarVisible = false // Oculta a sidebar com animação
+                        }
+                    }
+                    .zIndex(1) // Fica acima do conteúdo principal, mas abaixo da sidebar
+                
+                // Sidebar propriamente dita
+                VStack(alignment: .leading) {
+                    
+                    // Botão de fechar (ícone X)
+                    Button(action: {
+                        withAnimation {
+                            isSidebarVisible = false
+                        }
+                    }) {
+                        Image(systemName: "xmark")
+                            .resizable()
+                            .frame(width: 18, height: 18)
+                            .padding()
+                    }
+
+                    Divider().padding(.vertical, 10) // Separador visual
+
+                    // Botões de navegação entre páginas
+                    Group {
+                        Button(action: {
+                            selectedPage = .home
+                            isSidebarVisible = false
+                        }) {
+                            Label("Home", systemImage: "house")
+                                .padding(.vertical)
+                        }
+
+                        Button(action: {
+                            selectedPage = .settings
+                            isSidebarVisible = false
+                        }) {
+                            Label("Settings", systemImage: "gear")
+                                .padding(.vertical)
+                        }
+
+                        Button(action: {
+                            selectedPage = .about
+                            isSidebarVisible = false
+                        }) {
+                            Label("About", systemImage: "info.circle")
+                                .padding(.vertical)
+                        }
+                    }
+                    .padding(.leading, UIScreen.main.bounds.width * 0.10) // Recuo interno de 10% da largura da tela
+                    
+                    Spacer() // Empurra os botões para o topo
+                }
+                .frame(width: UIScreen.main.bounds.width * 0.70) // Sidebar ocupa 70% da largura da tela
+                .background(Color(.systemGray6)) // Cor de fundo clara e neutra
+                .transition(.move(edge: .leading)) // Animação de entrada pela esquerda
+                .zIndex(2) // Fica no topo da pilha de visualização
             }
         }
+
     }
 }
 
